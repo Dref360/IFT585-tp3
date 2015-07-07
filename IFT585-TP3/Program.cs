@@ -14,7 +14,7 @@ namespace IFT585_TP3
         {
             DNSPacket packet = new DNSPacket();
             UdpClient client = new UdpClient();
-            client.Connect(IPAddress.Parse("8.8.8.8"),53);
+            client.Connect(IPAddress.Parse("132.210.7.13"), 53);
             var pkt = packet.CreatePacket("www.google.com");
             int size = client.Send(pkt, pkt.Length);
             IPEndPoint end = new IPEndPoint(IPAddress.Any,0);
