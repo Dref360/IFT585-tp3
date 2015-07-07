@@ -34,9 +34,10 @@ namespace IFT585_TP3
             IEnumerable<byte> nameBytes = System.Text.Encoding.ASCII.GetBytes(url); //new byte[] {0x77,0x77,0x77,0x06,0x67,0x6f,0x6f,0x67,0x6c,0x65,0x03,0x63,0x6f,0x6d};//System.Text.Encoding.ASCII.GetBytes(url);
             IEnumerable<byte> type = BitConverter.GetBytes((ushort)1).Reverse(), pktClass = BitConverter.GetBytes((ushort)1).Reverse();
             //byte[] ttl = BitConverter.GetBytes((ushort)0);
-
-            return id.Concat(flag).Concat(nbQuest).Concat(nbAns).Concat(nbAuth).Concat(nbAdd).Concat(nbLabel).Concat(nameBytes).Concat(new byte[]{0}).Concat(type).Concat(pktClass).ToArray();
+            return IFT585Helper.Flatten(id, flag, nbQuest, nbAns, nbAuth, nbAdd, nbLabel, nameBytes, new byte[] { 0 }, type, pktClass).ToArray();
         }
+
+        
 
         private byte ChangeUrl(ref string url)
         {
