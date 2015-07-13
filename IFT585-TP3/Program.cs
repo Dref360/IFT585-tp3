@@ -20,10 +20,14 @@ namespace IFT585_TP3
         static void Main(string[] args)
         {
             DNSPacket packet = new DNSPacket();
-            var ip = packet.SendDNSRequest("google.com");
-            Console.WriteLine(ip);
-            var page = new WebPage(IPAddress.Parse("206.167.212.123"));
-            Console.WriteLine(page.DownloadPage());
+            UdpClient client = new UdpClient();
+            client.Connect(IPAddress.Parse("132.210.7.13"), 53);
+            var pkt = packet.CreatePacket("wallpaperswide.com");
+            int size = client.Send(pkt, pkt.Length);
+            IPEndPoint end = new IPEndPoint(IPAddress.Any,0);
+            var data = client.Receive(ref end);
+            var ip = data.Skip(pkt.Length + 12).Take(4);
+            IPAddress addr = new IPAddress(ip.ToArray());
             Console.Read();
         }
     }
