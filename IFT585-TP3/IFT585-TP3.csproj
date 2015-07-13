@@ -49,7 +49,6 @@
     <Compile Include="IFT585Helper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebPage.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
