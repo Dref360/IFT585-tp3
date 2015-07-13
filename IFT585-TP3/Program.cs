@@ -22,7 +22,7 @@ namespace IFT585_TP3
         private static UdpClient dnsClient;
         static IEnumerable<string> GetAllImageUrl(string page)
         {
-            var htmlSnippet = new HtmlDocument();
+            var htmlSnippet = new HtmlAgilityPack.HtmlDocument();
             htmlSnippet.LoadHtml(page);
             return htmlSnippet.DocumentNode.SelectNodes("//img[@src]").Select(x => x.Attributes["src"].Value);
         }
