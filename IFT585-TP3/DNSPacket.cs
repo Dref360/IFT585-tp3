@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -22,7 +24,7 @@ namespace IFT585_TP3
      */
     class DNSPacket
     {
-        public byte[] CreatePacket(string url)
+        private byte[] CreatePacket(string url)
         {
             Random random = new Random();
             IEnumerable<byte> id = new byte[] {0,0x0f};// BitConverter.GetBytes((ushort)random.Next());
@@ -49,7 +51,17 @@ namespace IFT585_TP3
             int name = url.LastIndexOf('.');
             url = reg.Replace(url, string.Format("$1{0}$2", end));
             return (byte)name;
+        }
 
+        public IPAddress SendDNSRequest(string url)
+        {
+            UdpClient client = new UdpClient();
+            client.Connect(IPAddress.Parse("8.8.8.8"), 53);
+            var pkt = CreatePacket("http://www.usherbrooke.ca/");
+            int size = client.Send(pkt, pkt.Length);
+            IPEndPoint end = new IPEndPoint(IPAddress.Any, 0);
+            var data = client.Receive(ref end);
+            return new IPAddress(data.Skip(pkt.Length + 6 * 2).Take(4).ToArray());
         }
     }
 }
