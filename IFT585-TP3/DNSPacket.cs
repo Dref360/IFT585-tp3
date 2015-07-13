@@ -25,7 +25,7 @@ namespace IFT585_TP3
         public byte[] CreatePacket(string url)
         {
             Random random = new Random();
-            IEnumerable<byte> id = new byte[] {0,0x0f};// BitConverter.GetBytes((ushort)random.Next());
+            IEnumerable<byte> id = new byte[] { 0, 0x0f };// BitConverter.GetBytes((ushort)random.Next());
             IEnumerable<byte> flag = BitConverter.GetBytes((ushort)0x0100).Reverse();
             IEnumerable<byte> nbQuest = BitConverter.GetBytes((ushort)1).Reverse();
             IEnumerable<byte> nbAns = BitConverter.GetBytes((ushort)0), nbAuth = BitConverter.GetBytes((ushort)0), nbAdd = BitConverter.GetBytes((ushort)0);
@@ -35,15 +35,15 @@ namespace IFT585_TP3
             return IFT585Helper.Flatten(id, flag, nbQuest, nbAns, nbAuth, nbAdd, urlBytes, new byte[] { 0 }, type, pktClass).ToArray();
         }
 
-        
+
 
         private IEnumerable<byte> ChangeUrl(string url)
         {
             List<byte> res = new List<byte>();
             foreach (var part in url.Split('.'))
             {
-               res.Add((byte) part.Length);
-               res.AddRange(Encoding.ASCII.GetBytes(part));
+                res.Add((byte)part.Length);
+                res.AddRange(Encoding.ASCII.GetBytes(part));
             }
             return res;
         }

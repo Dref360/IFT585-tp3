@@ -1,4 +1,6 @@
-﻿using System;
+﻿using System.Windows.Forms;
+using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,6 +20,12 @@ namespace IFT585_TP3
                                           " Host: {1}";
 
         private static UdpClient dnsClient;
+        static IEnumerable<string> GetAllImageUrl(string page)
+        {
+            var htmlSnippet = new HtmlDocument();
+            htmlSnippet.LoadHtml(page);
+            return htmlSnippet.DocumentNode.SelectNodes("//img[@src]").Select(x => x.Attributes["src"].Value);
+        }
         static void Main(string[] args)
         {
             DNSPacket packet = new DNSPacket();
