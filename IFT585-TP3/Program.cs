@@ -14,10 +14,10 @@ namespace IFT585_TP3
 {
     class Program
     {
-        //private const string GetRequest = "GET /store/te-news.png HTTP/1.1 \r\n"+
-        //                                  " Host: imgs.xkcd.com";
         private const string GetRequest = "GET {0} HTTP/1.1 \r\n" +
-                                          " Host: {1}";
+                                          "Host: {1}\r\n\r\n";
+
+        private const string connectionUrl = "www.reddit.com";
 
         private static UdpClient dnsClient;
         static IEnumerable<string> GetAllImageUrl(string page)
@@ -30,15 +30,41 @@ namespace IFT585_TP3
         {
             DNSPacket packet = new DNSPacket();
             dnsClient = new UdpClient();
-            dnsClient.Connect(IPAddress.Parse("132.210.7.13"), 53);
-            var pkt = packet.CreatePacket("xkcd.com");
+            dnsClient.Connect(IPAddress.Parse("8.8.8.8"), 53);
+            var pkt = packet.CreatePacket(connectionUrl);
             int size = dnsClient.Send(pkt, pkt.Length);
             IPEndPoint end = new IPEndPoint(IPAddress.Any,0);
             var data = dnsClient.Receive(ref end);
             var ip = data.Skip(pkt.Length + 12).Take(4);
             IPAddress addr = new IPAddress(ip.ToArray());
 
+            DownloadSource(addr);
+
+            Console.WriteLine("IT'S DONE!");
             Console.Read();
+        }
+
+        static public void DownloadSource(IPAddress addr)
+        {
+            using (TcpClient tcpClient = new TcpClient())
+            {
+                tcpClient.Connect(addr, 80);
+                var stream = tcpClient.GetStream();
+
+                var byteRequest = Encoding.ASCII.GetBytes(string.Format(GetRequest, "/", connectionUrl));
+                stream.Write(byteRequest, 0, byteRequest.Length);
+
+                System.Threading.Thread.Sleep(1000);
+
+                List<byte> srcByte = new List<byte>();
+                while (stream.DataAvailable)
+                {
+                    byte[] data = new byte[500];
+                    int read = stream.Read(data, 0, 500);
+                    srcByte.AddRange(data.Take(read));
+                }
+                File.WriteAllBytes("lol.htm", srcByte.ToArray());
+            }
         }
 
         public void DownloadImage(IEnumerable<string> img)
