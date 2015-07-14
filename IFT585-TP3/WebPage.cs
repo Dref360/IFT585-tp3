@@ -31,7 +31,7 @@ namespace IFT585_TP3
 
         public IEnumerable<string> GetAllImageUrl()
         {
-            var isPicture = new Regex("([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)");
+            var isPicture = new Regex("([^\\s]+(\\.(?i)(jpg|gif|tiff))$)");
             var htmlSnippet = new HtmlDocument();
             htmlSnippet.LoadHtml(Html);
             return htmlSnippet.DocumentNode.SelectNodes("//img[@src]").Select(x => x.Attributes["src"].Value).Where(x => isPicture.IsMatch(x));
