@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ namespace IFT585_TP3
         public IEnumerable<string> GetAllImageUrl()
         {
             var isPicture = new Regex("([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)");
-            var htmlSnippet = new HtmlAgilityPack.HtmlDocument();
+            var htmlSnippet = new HtmlDocument();
             htmlSnippet.LoadHtml(Html);
             return htmlSnippet.DocumentNode.SelectNodes("//img[@src]").Select(x => x.Attributes["src"].Value).Where(x => isPicture.IsMatch(x));
         }
