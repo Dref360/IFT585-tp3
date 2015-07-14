@@ -9,6 +9,7 @@ using System.Net.Configuration;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace IFT585_TP3
 {
@@ -20,12 +21,7 @@ namespace IFT585_TP3
         private const string connectionUrl = "www.reddit.com";
 
         private static UdpClient dnsClient;
-        static IEnumerable<string> GetAllImageUrl(string page)
-        {
-            var htmlSnippet = new HtmlAgilityPack.HtmlDocument();
-            htmlSnippet.LoadHtml(page);
-            return htmlSnippet.DocumentNode.SelectNodes("//img[@src]").Select(x => x.Attributes["src"].Value);
-        }
+        
         static void Main(string[] args)
         {
             DNSPacket packet = new DNSPacket();
@@ -63,14 +59,17 @@ namespace IFT585_TP3
                     int read = stream.Read(data, 0, 500);
                     srcByte.AddRange(data.Take(read));
                 }
+                var webpage = new WebPage(srcByte.ToArray());
+                DownloadImage(webpage.GetAllImageUrl());
                 File.WriteAllBytes("lol.htm", srcByte.ToArray());
             }
         }
 
-        public void DownloadImage(IEnumerable<string> img)
+        public static void DownloadImage(IEnumerable<string> images)
         {
-            foreach (string url in img)
+            foreach (string img in images)
             {
+                var url = img.StartsWith("http") ? img : "http:" + img;
                 Uri urlHost = new Uri(url,UriKind.Absolute);
                 string host=urlHost.Host;
                 string ressouce=urlHost.Query;
@@ -94,6 +93,8 @@ namespace IFT585_TP3
                
             }
         }
+
+        
 
         private static IPAddress GetIPForImg(string host)
         {
