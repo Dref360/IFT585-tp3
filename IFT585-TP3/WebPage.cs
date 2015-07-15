@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using System.Runtime.InteropServices;
+using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,8 @@ namespace IFT585_TP3
 
         public WebPage(string response)
         {
-            RemoveHeader(response);
+            //RemoveHeader(response);
+            Html = response;
         }
 
         private void RemoveHeader(string response)
@@ -34,7 +36,9 @@ namespace IFT585_TP3
             var isPicture = new Regex("([^\\s]+(\\.(?i)(jpg|gif|tiff))$)");
             var htmlSnippet = new HtmlDocument();
             htmlSnippet.LoadHtml(Html);
-            return htmlSnippet.DocumentNode.SelectNodes("//img[@src]").Select(x => x.Attributes["src"].Value).Where(x => isPicture.IsMatch(x));
+            var img = htmlSnippet.DocumentNode.SelectNodes("//img[@src]");
+            var src = img.Select(x => x.Attributes["src"].Value);
+            return src.Where(x => isPicture.IsMatch(x));
         }
     }
 }

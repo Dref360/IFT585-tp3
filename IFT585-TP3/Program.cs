@@ -16,7 +16,7 @@ namespace IFT585_TP3
         private const string GetRequest = "GET {0} HTTP/1.1 \r\n" +
                                           "Host: {1}\r\n\r\n";
 
-        private const string connectionUrl = "www.reddit.com";
+        private const string connectionUrl = "reedit.com";
 
         private static UdpClient dnsClient;
         
@@ -51,6 +51,7 @@ namespace IFT585_TP3
                 System.Threading.Thread.Sleep(1000);
 
                 List<byte> srcByte = new List<byte>();
+                while (!stream.DataAvailable) ;
                 while (stream.DataAvailable)
                 {
                     byte[] data = new byte[500];
@@ -67,32 +68,51 @@ namespace IFT585_TP3
         {
             foreach (string img in images)
             {
-                var url = img.StartsWith("http") ? img : "http:" + img;
+                var url = img.StartsWith("http") ? img : "http://" + connectionUrl + img;
                 Uri urlHost = new Uri(url,UriKind.Absolute);
                 string host=urlHost.Host;
-                string ressouce=urlHost.Query;
+                string ressouce=urlHost.LocalPath;
                 string request = string.Format(GetRequest, ressouce, host);
                 var hostIp = GetIPForImg(host);
-                using (TcpClient tcpClient = new TcpClient(new IPEndPoint(hostIp, 80)))
+                using (TcpClient tcpClient = new TcpClient())
                 {
+                    tcpClient.Connect(new IPEndPoint(hostIp, 80));
                     var stream = tcpClient.GetStream();
                     var byteRequest = Encoding.ASCII.GetBytes(request);
                     stream.Write(byteRequest, 0, byteRequest.Length);
-
+                    stream.Flush();
                     List<byte> imgByte = new List<byte>();
-                    while (stream.DataAvailable)
-                    {
+                    while (!stream.DataAvailable);
+                    int lenght = 0;
+                    {//Tente pas de renommer
                         byte[] data = new byte[500];
                         int read = stream.Read(data, 0, 500);
                         imgByte.AddRange(data.Take(read));
+                        string head = Encoding.ASCII.GetString(data);
+                        var contentLenght = (head.Skip(head.IndexOf("Content-Length",StringComparison.InvariantCultureIgnoreCase) + 15).TakeWhile(c => c != '\r').ToArray());
+                        lenght = int.Parse(new string(contentLenght));
                     }
-                    File.WriteAllBytes(ressouce, imgByte.ToArray());
+
+                    while (stream.DataAvailable || imgByte.Count < lenght)
+                    {
+                        byte[] data = new byte[32000];
+                        int read = stream.Read(data, 0, 32000);
+                        imgByte.AddRange(data.Take(read));
+                    }
+                    imgByte = RemoveHeader(imgByte.ToArray()).ToList();
+                    File.WriteAllBytes(ressouce.Substring(1).Replace('/','_'), imgByte.ToArray());
                 }
                
             }
         }
 
-        
+        private static byte[] RemoveHeader(byte[] response)
+        {
+            string resString = Encoding.ASCII.GetString(response);
+            var sccc = resString.Split(new string[] { Environment.NewLine }, StringSplitOptions.None).SkipWhile(x => x != "").Skip(1);
+            return Encoding.ASCII.GetBytes(sccc.First());
+
+        }
 
         private static IPAddress GetIPForImg(string host)
         {
