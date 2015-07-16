@@ -6,39 +6,46 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace IFT585_TP3
 {
-    class WebPage
+    class WebPage : HTTPDownloadableContent
     {
-        private string Html;
 
-        public WebPage(byte[] response)
-            : this(Encoding.Default.GetString(response))
+        public WebPage(Uri connectionUrl) : base(connectionUrl)
         {
-            
         }
 
-        public WebPage(string response)
-        {
-            //RemoveHeader(response);
-            Html = response;
-        }
 
-        private void RemoveHeader(string response)
-        {
-            var sccc = response.Split(new string[] { Environment.NewLine }, StringSplitOptions.None).SkipWhile(x => x != "").Skip(1);
-            Html = sccc.Skip(1).First();
-        }
 
-        public IEnumerable<string> GetAllImageUrl()
+        private IEnumerable<string> GetAllImageUrl(HtmlDocument html)
         {
             var isPicture = new Regex("([^\\s]+(\\.(?i)(jpg|gif|tiff))$)");
-            var htmlSnippet = new HtmlDocument();
-            htmlSnippet.LoadHtml(Html);
-            var img = htmlSnippet.DocumentNode.SelectNodes("//img[@src]");
-            var src = img.Select(x => x.Attributes["src"].Value);
-            return src.Where(x => isPicture.IsMatch(x));
+            return html.DocumentNode.SelectNodes("//img[@src]")
+                .Select(x => x.Attributes["src"].Value)
+                .Where(x => isPicture.IsMatch(x));
+        }
+
+        protected override void SaveFile(string content)
+        {
+            var html = new HtmlDocument();
+            Console.WriteLine("Le header de la requete pour le site : " + Uri);
+            Console.WriteLine(Header);
+            html.LoadHtml(content);
+            html.Save("page.html");
+            foreach (var imageUrl in GetAllImageUrl(html))
+            {
+                var url = new Uri(imageUrl.StartsWith("http") ? imageUrl : "http://" + Uri.Host + imageUrl);
+                var image = new ImageFromInternet(url);
+                image.Download();
+            }
+        }
+        protected override string ExtractContent(string content)
+        {
+            int length = Convert.ToInt32(String.Concat(content.TakeWhile(Char.IsLetterOrDigit)),16);
+            Debug.Assert(length < content.Length);
+            return String.Concat(content.SkipWhile(Char.IsLetterOrDigit).SkipWhile(Char.IsWhiteSpace)).Substring(0, length);
         }
     }
 }

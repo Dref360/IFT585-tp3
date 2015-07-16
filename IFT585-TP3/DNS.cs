@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -20,9 +22,25 @@ namespace IFT585_TP3
      *            class - ushort (1)
      *            TTL - 32bit (0) Dont cache
      */
-    class DNSPacket
+    public static class DNS
     {
-        public byte[] CreatePacket(string url)
+        private static Lazy<UdpClient> DnsClient = new Lazy<UdpClient>(() =>
+        {
+            var dnsClient = new UdpClient();
+            dnsClient.Connect(IPAddress.Parse("8.8.8.8"), 53);
+            return dnsClient;
+        });
+
+        public static IPAddress GetIp(string host)
+        {
+            var packet = CreatePacket(host);
+            int size = DnsClient.Value.Send(packet, packet.Length);
+            IPEndPoint end = new IPEndPoint(IPAddress.Any, 0);
+            var data = DnsClient.Value.Receive(ref end);
+            var ip = data.Skip(packet.Length + 12).Take(4);
+            return new IPAddress(ip.ToArray());
+        }
+        private static byte[] CreatePacket(string url)
         {
             Random random = new Random();
             IEnumerable<byte> id = new byte[] { 0, 0x0f };// BitConverter.GetBytes((ushort)random.Next());
@@ -37,7 +55,7 @@ namespace IFT585_TP3
 
 
 
-        private IEnumerable<byte> ChangeUrl(string url)
+        private static IEnumerable<byte> ChangeUrl(string url)
         {
             List<byte> res = new List<byte>();
             foreach (var part in url.Split('.'))
