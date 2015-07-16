@@ -30,8 +30,8 @@ namespace IFT585_TP3
         protected override void SaveFile(string content)
         {
             var html = new HtmlDocument();
-            Console.WriteLine("Le header de la requete pour le site : " + Uri);
-            Console.WriteLine(Header);
+            Console.WriteLine("Le header de la requete pour le site " + Uri + " est : ");
+            Console.WriteLine(Header+"\n");
             html.LoadHtml(content);
             html.Save("page.html");
             foreach (var imageUrl in GetAllImageUrl(html))
@@ -41,11 +41,31 @@ namespace IFT585_TP3
                 image.Download();
             }
         }
+
+        private string NewContent(string content, int length)
+        {
+            if (length > content.Length)
+            {
+                return content + Encoding.Default.GetString(DownloadMissingContent(length - content.Length));
+            }
+            else
+            {
+                return String.Concat(content.SkipWhile(Char.IsLetterOrDigit).SkipWhile(Char.IsWhiteSpace));
+            }
+        }
+
         protected override string ExtractContent(string content)
         {
-            int length = Convert.ToInt32(String.Concat(content.TakeWhile(Char.IsLetterOrDigit)),16);
-            Debug.Assert(length < content.Length);
-            return String.Concat(content.SkipWhile(Char.IsLetterOrDigit).SkipWhile(Char.IsWhiteSpace)).Substring(0, length);
+            int contentLength = ContentLength();
+            if (contentLength != 0)
+            {
+                return NewContent(content, contentLength);
+            }
+            else
+            {
+                int length = Convert.ToInt32(String.Concat(content.TakeWhile(Char.IsLetterOrDigit)), 16);
+                return NewContent(content,length);
+            }
         }
     }
 }
