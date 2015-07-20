@@ -15,17 +15,17 @@ namespace IFT585_TP3
     {
         private const string GetRequest = "GET {0} HTTP/1.1 \r\n" +
                                           "Host: {1}\r\n\r\n";
-
-        private const string connectionUrl = "reedit.com";
         
         static void Main(string[] args)
         {
-            var page = new WebPage(new Uri(connectionUrl.StartsWith("http") ? connectionUrl : "http://" + connectionUrl));
-            page.Download();
-
-
-            Console.WriteLine("IT'S DONE!");
-            Console.Read();
+            while(true)
+            {
+                Console.WriteLine("Veuillez entrer l'url du site que vous voulez accéder");
+                string connectionUrl = Console.ReadLine();
+                var page = new WebPage(new Uri(connectionUrl.StartsWith("http") ? connectionUrl : "http://" + connectionUrl));
+                page.Download();
+            }
+            
         }
     }
 }

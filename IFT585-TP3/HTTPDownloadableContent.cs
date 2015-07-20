@@ -14,7 +14,8 @@ namespace IFT585_TP3
     {
 
         private const string GetRequest = "GET {0} HTTP/1.1 \r\n" +
-                                          "Host: {1}\r\n\r\n";
+                                          "Host: {1}\r\n" +
+                                          "Cache-Control: no-cache \r\n\r\n";
         protected Uri Uri;
         protected IPAddress IpAdress;
         protected string Header { get; private set; }
@@ -49,21 +50,36 @@ namespace IFT585_TP3
                     srcByte.AddRange(data.Take(read));
                 }
 
-                SaveFile(ParseRequest(srcByte.ToArray()));
+                ParseRequest(srcByte.ToArray());
             }
         }
-        private string ParseRequest(byte[] receivedData)
+        private void ParseRequest(byte[] receivedData)
         {
             var text = Encoding.Default.GetString(receivedData);
             var lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
             Header = String.Join(Environment.NewLine, lines.TakeWhile(x => x != ""));
-            return ExtractContent(String.Join(Environment.NewLine, lines.SkipWhile(x => x != "").SkipWhile(x => x == "")));
+            int code = GetHttpResponseCode();
+            if (code == 200)
+            {
+                var content = ExtractContent(String.Join(Environment.NewLine, lines.SkipWhile(x => x != "").SkipWhile(x => x == "")));
+                SaveFile(content);
+            }
+            else
+            {
+                Console.WriteLine(Header);
+            }
+            
         }
         protected abstract void SaveFile(string content);
 
         protected virtual string ExtractContent(string content)
         {
             return content;
+        }
+
+        private int GetHttpResponseCode()
+        {
+            return int.Parse(Header.Split(' ').ElementAt(1));
         }
 
         protected int ContentLength()

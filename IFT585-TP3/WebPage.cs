@@ -22,8 +22,8 @@ namespace IFT585_TP3
         private IEnumerable<string> GetAllImageUrl(HtmlDocument html)
         {
             var isPicture = new Regex("([^\\s]+(\\.(?i)(jpg|gif|tiff))$)");
-            return html.DocumentNode.SelectNodes("//img[@src]")
-                .Select(x => x.Attributes["src"].Value)
+            var nodes = html.DocumentNode.SelectNodes("//img[@src]") ?? Enumerable.Empty<HtmlNode>();
+            return nodes.Select(x => x.Attributes["src"].Value)
                 .Where(x => isPicture.IsMatch(x));
         }
 
