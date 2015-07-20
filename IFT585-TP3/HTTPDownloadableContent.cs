@@ -13,8 +13,9 @@ namespace IFT585_TP3
     public abstract class HTTPDownloadableContent
     {
 
-        private const string GetRequest = "GET {0} HTTP/1.1 \r\n" +
-                                          "Host: {1}\r\n\r\n";
+        private readonly string GetRequest = "GET {0} HTTP/1.1" + Environment.NewLine +
+                                          "Host: {1}" + Environment.NewLine +
+                                          Environment.NewLine;
         protected Uri Uri;
         protected IPAddress IpAdress;
         protected string Header { get; private set; }
@@ -50,8 +51,8 @@ namespace IFT585_TP3
                 }
                 if (srcByte.Count > 0)
                 {
-                    ParseRequest(srcByte.ToArray());
-                }
+                ParseRequest(srcByte.ToArray());
+            }
                 else
                 {
                     Console.WriteLine("La requete n'a rien retournée");
@@ -89,11 +90,11 @@ namespace IFT585_TP3
 
         protected int ContentLength()
         {
-            if(Header==null)
+            if (Header == null)
             {
                 throw new Exception("The header is currently null");
             }
-            if(Header.Contains("Content-Length"))
+            if (Header.Contains("Content-Length"))
             {
                 string line = Header.Split(new string[] { Environment.NewLine }, StringSplitOptions.None).First(str => str.StartsWith("Content-Length"));
                 return int.Parse(Regex.Match(line, @"\d+").Value);
@@ -108,7 +109,7 @@ namespace IFT585_TP3
         {
             int numberOfByteDownloaded = 0;
             var downloadedBytes = new List<byte>(bytesToDownload);
-            while (!stream.DataAvailable);
+            while (!stream.DataAvailable) ;
             while (numberOfByteDownloaded < bytesToDownload)
             {
                 byte[] data = new byte[bufferSize];
