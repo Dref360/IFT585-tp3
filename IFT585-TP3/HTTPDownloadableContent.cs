@@ -14,8 +14,7 @@ namespace IFT585_TP3
     {
 
         private const string GetRequest = "GET {0} HTTP/1.1 \r\n" +
-                                          "Host: {1}\r\n" +
-                                          "Cache-Control: no-cache \r\n\r\n";
+                                          "Host: {1}\r\n\r\n";
         protected Uri Uri;
         protected IPAddress IpAdress;
         protected string Header { get; private set; }
@@ -42,15 +41,21 @@ namespace IFT585_TP3
 
 
                 List<byte> srcByte = new List<byte>();
-                while (!stream.DataAvailable) ;
+                Thread.Sleep(1000);
                 while (stream.DataAvailable)
                 {
                     byte[] data = new byte[bufferSize];
                     int read = stream.Read(data, 0, bufferSize);
                     srcByte.AddRange(data.Take(read));
                 }
-
-                ParseRequest(srcByte.ToArray());
+                if (srcByte.Count > 0)
+                {
+                    ParseRequest(srcByte.ToArray());
+                }
+                else
+                {
+                    Console.WriteLine("La requete n'a rien retournée");
+                }
             }
         }
         private void ParseRequest(byte[] receivedData)

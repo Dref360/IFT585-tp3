@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -37,13 +38,30 @@ namespace IFT585_TP3
             int size = DnsClient.Value.Send(packet, packet.Length);
             IPEndPoint end = new IPEndPoint(IPAddress.Any, 0);
             var data = DnsClient.Value.Receive(ref end);
-            var ip = data.Skip(packet.Length + 12).Take(4);
-            return new IPAddress(ip.ToArray());
+            var ip = data.Skip(packet.Length + 12).Take(4).ToArray();
+            var ip2 = GetIpInternal(data.Skip(packet.Length).ToArray());
+            return new IPAddress(ip2);
+        }
+
+        public static byte[] GetIpInternal(byte[] data)
+        {
+            //skip 11 take 4
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] == 0xc0)
+                {
+                    if (data[i + 3] == 0x01)
+                    {
+                        return data.Skip(i + 12).Take(4).ToArray();
+                    }
+                }
+            }
+            return null;
         }
         private static byte[] CreatePacket(string url)
         {
             Random random = new Random();
-            IEnumerable<byte> id = new byte[] { 0, 0x0f };// BitConverter.GetBytes((ushort)random.Next());
+            IEnumerable<byte> id = new byte[] { 0, (byte)DateTime.Now.ToBinary() };// BitConverter.GetBytes((ushort)random.Next());
             IEnumerable<byte> flag = BitConverter.GetBytes((ushort)0x0100).Reverse();
             IEnumerable<byte> nbQuest = BitConverter.GetBytes((ushort)1).Reverse();
             IEnumerable<byte> nbAns = BitConverter.GetBytes((ushort)0), nbAuth = BitConverter.GetBytes((ushort)0), nbAdd = BitConverter.GetBytes((ushort)0);

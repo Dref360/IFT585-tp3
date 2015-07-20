@@ -36,7 +36,19 @@ namespace IFT585_TP3
             html.Save("page.html");
             foreach (var imageUrl in GetAllImageUrl(html))
             {
-                var url = new Uri(imageUrl.StartsWith("http") ? imageUrl : "http://" + Uri.Host + imageUrl);
+                Console.WriteLine("Download de l'image {0}",imageUrl);
+                Uri url;
+                if (imageUrl.StartsWith("http"))
+                {
+                    url = new Uri(imageUrl);
+                }
+                else
+                {
+                    if (imageUrl.StartsWith("//"))
+                        url = new Uri("http:"+imageUrl);
+                    else
+                        url = new Uri("http://" + Uri.Host + imageUrl);
+                }
                 var image = new ImageFromInternet(url);
                 image.Download();
             }
