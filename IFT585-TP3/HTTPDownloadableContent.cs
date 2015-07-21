@@ -16,6 +16,8 @@ namespace IFT585_TP3
         private readonly string GetRequest = "GET {0} HTTP/1.1" + Environment.NewLine +
                                           "Host: {1}" + Environment.NewLine +
                                           Environment.NewLine;
+
+        private const int TIMEOUT = 5000;
         protected Uri Uri;
         protected IPAddress IpAdress;
         protected string Header { get; private set; }
@@ -33,7 +35,11 @@ namespace IFT585_TP3
         {
             using (TcpClient tcpClient = new TcpClient())
             {
-                tcpClient.Connect(IpAdress, 80);
+                if (!tcpClient.ConnectAsync(IpAdress, 80).Wait(TIMEOUT))
+                {
+                    Console.WriteLine("La connection vers " + Uri + " a timeout");
+                    return;
+                }
                 stream = tcpClient.GetStream();
 
                 var byteRequest = Encoding.ASCII.GetBytes(string.Format(GetRequest, Uri.LocalPath, Uri.Host));
@@ -42,21 +48,15 @@ namespace IFT585_TP3
 
 
                 List<byte> srcByte = new List<byte>();
-                Thread.Sleep(1000);
+                while (!stream.DataAvailable) ;
                 while (stream.DataAvailable)
                 {
                     byte[] data = new byte[bufferSize];
                     int read = stream.Read(data, 0, bufferSize);
                     srcByte.AddRange(data.Take(read));
                 }
-                if (srcByte.Count > 0)
-                {
+
                 ParseRequest(srcByte.ToArray());
-            }
-                else
-                {
-                    Console.WriteLine("La requete n'a rien retournée");
-                }
             }
         }
         private void ParseRequest(byte[] receivedData)
@@ -74,7 +74,7 @@ namespace IFT585_TP3
             {
                 Console.WriteLine(Header);
             }
-            
+
         }
         protected abstract void SaveFile(string content);
 
